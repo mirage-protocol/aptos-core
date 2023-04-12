@@ -1,3 +1,5 @@
+// Copyright © Mirage Protocol
+
 // Copyright © Aptos Foundation
 // SPDX-License-Identifier: Apache-2.0
 
@@ -33,6 +35,11 @@ pub fn u64_to_bigdecimal(val: u64) -> BigDecimal {
 #[allow(dead_code)]
 pub fn bigdecimal_to_u64(val: &BigDecimal) -> u64 {
     val.to_u64().expect("Unable to convert big decimal to u64")
+}
+
+#[allow(dead_code)]
+pub fn bigdecimal_to_usize(val: &BigDecimal) -> usize {
+    val.to_usize().expect("Unable to convert big decimal to u32")
 }
 
 pub fn ensure_not_negative(val: BigDecimal) -> BigDecimal {

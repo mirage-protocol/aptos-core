@@ -1,4 +1,4 @@
-// Copyright © Aptos Foundation
+// Copyright © Mirage Protocol
 
 // @generated automatically by Diesel CLI.
 
@@ -24,6 +24,19 @@ diesel::table! {
         proposer -> Varchar,
         failed_proposer_indices -> Jsonb,
         timestamp -> Timestamp,
+        inserted_at -> Timestamp,
+    }
+}
+
+diesel::table! {
+    closed_limit_orders (id) {
+        user_addr -> Varchar,
+        type_hash -> Varchar,
+        margin_type -> Varchar,
+        perp_type -> Varchar,
+        id -> Numeric,
+        transaction_timestamp -> Timestamp,
+        transaction_version -> Int8,
         inserted_at -> Timestamp,
     }
 }
@@ -536,6 +549,113 @@ diesel::table! {
 }
 
 diesel::table! {
+    limit_orders (transaction_version, id) {
+        user_addr -> Varchar,
+        type_hash -> Varchar,
+        margin_type -> Varchar,
+        perp_type -> Varchar,
+        id -> Numeric,
+        is_long -> Bool,
+        is_increase -> Bool,
+        position_size -> Numeric,
+        margin -> Numeric,
+        trigger_price -> Numeric,
+        triggers_above -> Bool,
+        trigger_payment -> Numeric,
+        max_price_slippage -> Numeric,
+        expiration -> Numeric,
+        transaction_timestamp -> Timestamp,
+        transaction_version -> Int8,
+        inserted_at -> Timestamp,
+    }
+}
+
+diesel::table! {
+    market_activities (transaction_version, event_creation_number, event_sequence_number) {
+        transaction_version -> Int8,
+        event_creation_number -> Int8,
+        event_sequence_number -> Int8,
+        event_index -> Int8,
+        type_hash -> Varchar,
+        event_type -> Varchar,
+        margin_type -> Varchar,
+        perp_type -> Varchar,
+        user_addr -> Nullable<Varchar>,
+        position_limit -> Nullable<Numeric>,
+        id -> Nullable<Numeric>,
+        perp_price -> Nullable<Numeric>,
+        is_long -> Nullable<Bool>,
+        margin_amount -> Nullable<Numeric>,
+        position_size -> Nullable<Numeric>,
+        maintenance_margin -> Nullable<Numeric>,
+        fee -> Nullable<Numeric>,
+        pnl -> Nullable<Numeric>,
+        caller_addr -> Nullable<Varchar>,
+        take_profit_price -> Nullable<Numeric>,
+        stop_loss_price -> Nullable<Numeric>,
+        trigger_price -> Nullable<Numeric>,
+        max_price_slippage -> Nullable<Numeric>,
+        is_increase -> Nullable<Bool>,
+        triggers_above -> Nullable<Bool>,
+        expiration -> Nullable<Numeric>,
+        trigger_payment_amount -> Nullable<Numeric>,
+        next_funding_pos -> Nullable<Bool>,
+        next_funding_rate -> Nullable<Numeric>,
+        transaction_timestamp -> Timestamp,
+        inserted_at -> Timestamp,
+    }
+}
+
+diesel::table! {
+    market_configs (transaction_version, type_hash) {
+        type_hash -> Varchar,
+        margin_type -> Varchar,
+        perp_type -> Varchar,
+        max_taker_fee -> Numeric,
+        min_taker_fee -> Numeric,
+        max_maker_fee -> Numeric,
+        min_maker_fee -> Numeric,
+        liquidation_fee -> Numeric,
+        min_funding_rate -> Numeric,
+        max_funding_rate -> Numeric,
+        pool_funding_discount -> Numeric,
+        funding_interval -> Numeric,
+        max_oi -> Numeric,
+        max_oi_imbalance -> Numeric,
+        max_leverage -> Numeric,
+        base_maintenance_margin -> Nullable<Numeric>,
+        base_position_limit -> Numeric,
+        max_position_limit -> Numeric,
+        min_order_size -> Numeric,
+        transaction_timestamp -> Timestamp,
+        transaction_version -> Int8,
+        inserted_at -> Timestamp,
+    }
+}
+
+diesel::table! {
+    markets (transaction_version, type_hash) {
+        type_hash -> Varchar,
+        margin_type -> Varchar,
+        perp_type -> Varchar,
+        long_margin_base -> Numeric,
+        long_margin_elastic -> Numeric,
+        short_margin_base -> Numeric,
+        short_margin_elastic -> Numeric,
+        long_oi -> Numeric,
+        short_oi -> Numeric,
+        next_funding_rate -> Numeric,
+        next_funding_pos -> Bool,
+        last_funding_round -> Numeric,
+        is_long_close_only -> Bool,
+        is_short_close_only -> Bool,
+        transaction_timestamp -> Timestamp,
+        transaction_version -> Int8,
+        inserted_at -> Timestamp,
+    }
+}
+
+diesel::table! {
     move_modules (transaction_version, write_set_change_index) {
         transaction_version -> Int8,
         write_set_change_index -> Int8,
@@ -598,6 +718,53 @@ diesel::table! {
         guid_creation_num -> Numeric,
         allow_ungated_transfer -> Bool,
         is_deleted -> Bool,
+        inserted_at -> Timestamp,
+    }
+}
+
+diesel::table! {
+    open_limit_orders (id) {
+        user_addr -> Varchar,
+        type_hash -> Varchar,
+        margin_type -> Varchar,
+        perp_type -> Varchar,
+        id -> Numeric,
+        transaction_timestamp -> Timestamp,
+        transaction_version -> Int8,
+        inserted_at -> Timestamp,
+    }
+}
+
+diesel::table! {
+    position_limits (transaction_version, type_hash, user_addr) {
+        user_addr -> Varchar,
+        type_hash -> Varchar,
+        margin_type -> Varchar,
+        perp_type -> Varchar,
+        position_limit -> Numeric,
+        transaction_timestamp -> Timestamp,
+        transaction_version -> Int8,
+        inserted_at -> Timestamp,
+    }
+}
+
+diesel::table! {
+    positions (transaction_version, id) {
+        user_addr -> Varchar,
+        type_hash -> Varchar,
+        margin_type -> Varchar,
+        perp_type -> Varchar,
+        id -> Numeric,
+        opening_price -> Numeric,
+        is_long -> Bool,
+        margin_part -> Numeric,
+        position_size -> Numeric,
+        maintenance_margin -> Numeric,
+        take_profit_price -> Numeric,
+        stop_loss_price -> Numeric,
+        trigger_payment -> Numeric,
+        transaction_timestamp -> Timestamp,
+        transaction_version -> Int8,
         inserted_at -> Timestamp,
     }
 }
@@ -875,6 +1042,24 @@ diesel::table! {
 }
 
 diesel::table! {
+    trades (id, transaction_version) {
+        user_addr -> Varchar,
+        type_hash -> Varchar,
+        margin_type -> Varchar,
+        perp_type -> Varchar,
+        id -> Numeric,
+        is_long -> Bool,
+        size -> Numeric,
+        price -> Numeric,
+        fee -> Numeric,
+        pnl -> Numeric,
+        transaction_timestamp -> Timestamp,
+        transaction_version -> Int8,
+        inserted_at -> Timestamp,
+    }
+}
+
+diesel::table! {
     transactions (version) {
         version -> Int8,
         block_height -> Int8,
@@ -921,6 +1106,69 @@ diesel::table! {
 }
 
 diesel::table! {
+    vault_activities (transaction_version, event_creation_number, event_sequence_number) {
+        transaction_version -> Int8,
+        event_creation_number -> Int8,
+        event_sequence_number -> Int8,
+        event_index -> Int8,
+        type_hash -> Varchar,
+        event_type -> Varchar,
+        collateral_type -> Varchar,
+        borrow_type -> Varchar,
+        collateral_amount -> Nullable<Numeric>,
+        borrow_amount -> Nullable<Numeric>,
+        user_addr -> Nullable<Varchar>,
+        withdraw_addr -> Nullable<Varchar>,
+        liquidator_addr -> Nullable<Varchar>,
+        accrued_amount -> Nullable<Numeric>,
+        rate -> Nullable<Numeric>,
+        fees_earned -> Nullable<Numeric>,
+        old_interest_per_second -> Nullable<Numeric>,
+        new_interest_per_second -> Nullable<Numeric>,
+        transaction_timestamp -> Timestamp,
+        inserted_at -> Timestamp,
+    }
+}
+
+diesel::table! {
+    vault_users (transaction_version, user_addr, type_hash) {
+        user_addr -> Varchar,
+        type_hash -> Varchar,
+        collateral_type -> Varchar,
+        borrow_type -> Varchar,
+        collateral -> Numeric,
+        borrow_part -> Numeric,
+        transaction_timestamp -> Timestamp,
+        transaction_version -> Int8,
+        inserted_at -> Timestamp,
+    }
+}
+
+diesel::table! {
+    vaults (transaction_version, type_hash) {
+        type_hash -> Varchar,
+        collateral_type -> Varchar,
+        borrow_type -> Varchar,
+        total_collateral -> Numeric,
+        borrow_elastic -> Numeric,
+        borrow_base -> Numeric,
+        global_debt_part -> Numeric,
+        interest_per_second -> Numeric,
+        last_interest_payment -> Numeric,
+        collateralization_rate -> Numeric,
+        liquidation_multiplier -> Numeric,
+        borrow_fee -> Numeric,
+        distribution_part -> Numeric,
+        cached_exchange_rate -> Numeric,
+        last_interest_update -> Numeric,
+        is_emergency -> Bool,
+        transaction_timestamp -> Timestamp,
+        transaction_version -> Int8,
+        inserted_at -> Timestamp,
+    }
+}
+
+diesel::table! {
     write_set_changes (transaction_version, index) {
         transaction_version -> Int8,
         index -> Int8,
@@ -938,6 +1186,7 @@ diesel::table! {
 diesel::allow_tables_to_appear_in_same_query!(
     account_transactions,
     block_metadata_transactions,
+    closed_limit_orders,
     coin_activities,
     coin_balances,
     coin_infos,
@@ -965,10 +1214,17 @@ diesel::allow_tables_to_appear_in_same_query!(
     events,
     indexer_status,
     ledger_infos,
+    limit_orders,
+    market_activities,
+    market_configs,
+    markets,
     move_modules,
     move_resources,
     nft_points,
     objects,
+    open_limit_orders,
+    position_limits,
+    positions,
     processor_status,
     processor_statuses,
     proposal_votes,
@@ -982,7 +1238,11 @@ diesel::allow_tables_to_appear_in_same_query!(
     token_ownerships,
     token_ownerships_v2,
     tokens,
+    trades,
     transactions,
     user_transactions,
+    vault_activities,
+    vault_users,
+    vaults,
     write_set_changes,
 );

@@ -1,3 +1,5 @@
+// Copyright © Mirage Protocol
+
 // Copyright © Aptos Foundation
 // SPDX-License-Identifier: Apache-2.0
 
@@ -30,6 +32,10 @@ pub const MAX_DIESEL_PARAM_SIZE: u16 = u16::MAX;
 /// we may need to chunk an array of items based on how many columns are in the table.
 /// This function returns boundaries of chunks in the form of (start_index, end_index)
 pub fn get_chunks(num_items_to_insert: usize, column_count: usize) -> Vec<(usize, usize)> {
+    if num_items_to_insert == 0 {
+        return vec![]
+    }
+
     let max_item_size = MAX_DIESEL_PARAM_SIZE as usize / column_count;
     let mut chunk: (usize, usize) = (0, min(num_items_to_insert, max_item_size));
     let mut chunks = vec![chunk];
