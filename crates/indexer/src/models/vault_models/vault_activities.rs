@@ -158,7 +158,7 @@ impl VaultActivity {
 
         if !user_infos.is_empty() || !vault_activities.is_empty() {
             info!(
-                "VaultProcessor {{ user infos: {:?} vault activities: {:?}",
+                "MirageProcessor {{ user infos: {:?} vault activities: {:?}",
                 user_infos,
                 vault_activities
             );

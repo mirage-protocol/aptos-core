@@ -21,23 +21,23 @@ use field_count::FieldCount;
 use std::{collections::HashMap, fmt::Debug};
 use aptos_logger::info;
 
-pub const NAME: &str = "vault_processor";
-pub struct VaultProcessor {
+pub const NAME: &str = "mirage_processor";
+pub struct MirageProcessor {
     connection_pool: PgDbPool,
 }
 
-impl VaultProcessor {
+impl MirageProcessor {
     pub fn new(connection_pool: PgDbPool) -> Self {
         Self { connection_pool }
     }
 }
 
-impl Debug for VaultProcessor {
+impl Debug for MirageProcessor {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let state = &self.connection_pool.state();
         write!(
             f,
-            "VaultProcessor {{ connections: {:?}  idle_connections: {:?} }}",
+            "MirageProcessor {{ connections: {:?}  idle_connections: {:?} }}",
             state.connections, state.idle_connections
         )
     }
@@ -178,7 +178,7 @@ fn insert_vault_activities(
 }
 
 #[async_trait]
-impl TransactionProcessor for VaultProcessor {
+impl TransactionProcessor for MirageProcessor {
     fn name(&self) -> &'static str {
         NAME
     }
@@ -196,7 +196,7 @@ impl TransactionProcessor for VaultProcessor {
         let mut all_vaults: HashMap<(String, String), Vault> = HashMap::new();
 
         info!(
-            "VaultProcessor {{ processing: {:?} start version: {:?} end_version: {:?}}}",
+            "MirageProcessor {{ processing: {:?} start version: {:?} end_version: {:?}}}",
             transactions.len(), start_version, end_version
         );
 
