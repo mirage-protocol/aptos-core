@@ -1,4 +1,4 @@
-// Copyright © Aptos Foundation
+// Copyright © Mirage Protocol
 
 use crate::{
     database::{

@@ -1,4 +1,4 @@
-// Copyright © Aptos Foundation
+// Copyright © Mirage Protocol
 
 // This is required because a diesel macro makes clippy sad
 #![allow(clippy::extra_unused_lifetimes)]

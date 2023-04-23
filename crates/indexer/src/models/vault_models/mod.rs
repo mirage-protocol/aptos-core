@@ -1,4 +1,4 @@
-// Copyright © Aptos Foundation
+// Copyright © Mirage Protocol
 
 pub mod rebase;
 pub mod user_infos;

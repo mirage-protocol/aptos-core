@@ -1,4 +1,4 @@
-// Copyright © Aptos Foundation
+// Copyright © Mirage Protocol
 
 use super::vault_utils::{
     hash_types,
