@@ -9,7 +9,8 @@ use crate::{
         transaction_processor::TransactionProcessor,
     },
     models::vault_models::{
-        vault_resources::{UserInfo, Vault},
+        user_infos::UserInfo,
+        vaults::Vault,
         vault_activities::VaultActivity,
     },
     schema,
@@ -45,12 +46,12 @@ impl Debug for MirageProcessor {
 
 fn insert_to_db_impl(
     conn: &mut PgConnection,
-    all_user_infos: &[UserInfo],
     all_vaults: &[Vault],
+    all_user_infos: &[UserInfo],
     all_vault_activities: &[VaultActivity],
 ) -> Result<(), diesel::result::Error> {
-    insert_user_info(conn, all_user_infos)?;
     insert_vaults(conn, all_vaults)?;
+    insert_user_info(conn, all_user_infos)?;
     insert_vault_activities(conn, all_vault_activities)?;
     Ok(())
 }
@@ -60,8 +61,8 @@ fn insert_to_db(
     name: &'static str,
     start_version: u64,
     end_version: u64,
-    all_user_infos: Vec<UserInfo>,
     all_vaults: Vec<Vault>,
+    all_user_infos: Vec<UserInfo>,
     all_vault_activities: Vec<VaultActivity>,
 ) -> Result<(), diesel::result::Error> {
     aptos_logger::trace!(
@@ -76,8 +77,8 @@ fn insert_to_db(
         .run::<_, Error, _>(|pg_conn| {
             insert_to_db_impl(
                 pg_conn,
-                &all_user_infos,
                 &all_vaults,
+                &all_user_infos,
                 &all_vault_activities,
             )
         }) {
@@ -91,37 +92,12 @@ fn insert_to_db(
 
                 insert_to_db_impl(
                     pg_conn,
-                    &all_user_infos,
                     &all_vaults,
+                    &all_user_infos,
                     &all_vault_activities,
                 )
             }),
     }
-}
-
-fn insert_user_info(
-    conn: &mut PgConnection,
-    item_to_insert: &[UserInfo],
-) -> Result<(), diesel::result::Error> {
-    use schema::user_infos::dsl::*;
-
-    let chunks = get_chunks(item_to_insert.len(), UserInfo::field_count());
-    for (start_ind, end_ind) in chunks {
-        execute_with_better_error(
-            conn,
-            diesel::insert_into(schema::user_infos::table)
-                .values(&item_to_insert[start_ind..end_ind])
-                .on_conflict((transaction_version, user_address, type_hash))
-                .do_update()
-                .set((
-                    transaction_version.eq(excluded(transaction_version)),
-                    transaction_timestamp.eq(excluded(transaction_timestamp)),
-                    inserted_at.eq(excluded(inserted_at)),
-                )),
-                None,
-            )?;
-    }
-    Ok(())
 }
 
 fn insert_vaults(
@@ -137,6 +113,31 @@ fn insert_vaults(
             diesel::insert_into(schema::vaults::table)
                 .values(&item_to_insert[start_ind..end_ind])
                 .on_conflict((transaction_version, type_hash))
+                .do_update()
+                .set((
+                    transaction_version.eq(excluded(transaction_version)),
+                    transaction_timestamp.eq(excluded(transaction_timestamp)),
+                    inserted_at.eq(excluded(inserted_at)),
+                )),
+                None,
+            )?;
+    }
+    Ok(())
+}
+
+fn insert_user_info(
+    conn: &mut PgConnection,
+    item_to_insert: &[UserInfo],
+) -> Result<(), diesel::result::Error> {
+    use schema::user_infos::dsl::*;
+
+    let chunks = get_chunks(item_to_insert.len(), UserInfo::field_count());
+    for (start_ind, end_ind) in chunks {
+        execute_with_better_error(
+            conn,
+            diesel::insert_into(schema::user_infos::table)
+                .values(&item_to_insert[start_ind..end_ind])
+                .on_conflict((transaction_version, user_address, type_hash))
                 .do_update()
                 .set((
                     transaction_version.eq(excluded(transaction_version)),
@@ -192,8 +193,8 @@ impl TransactionProcessor for MirageProcessor {
         let mut conn = self.get_conn();
 
         let mut all_vault_activities: Vec<VaultActivity> = vec![];
-        let mut all_user_infos: HashMap<(String, String), UserInfo> = HashMap::new();
         let mut all_vaults: HashMap<(String, String), Vault> = HashMap::new();
+        let mut all_user_infos: HashMap<(String, String), UserInfo> = HashMap::new();
 
         info!(
             "MirageProcessor {{ processing: {:?} start version: {:?} end_version: {:?}}}",
@@ -201,32 +202,33 @@ impl TransactionProcessor for MirageProcessor {
         );
 
         for txn in &transactions {
-            let (mut vault_activities, user_infos, vaults) = VaultActivity::from_transaction(
+            let (mut vault_activities, vaults, user_infos) = VaultActivity::from_transaction(
                 txn,
             );
             all_vault_activities.append(&mut vault_activities);
-            all_user_infos.extend(user_infos);
             all_vaults.extend(vaults);
+            all_user_infos.extend(user_infos);
         }
 
-        let mut all_user_infos = all_user_infos.into_values().collect::<Vec<UserInfo>>();
         let mut all_vaults = all_vaults.into_values().collect::<Vec<Vault>>();
+        let mut all_user_infos = all_user_infos.into_values().collect::<Vec<UserInfo>>();
+
+        // Sort by vault type
+        all_vaults.sort_by(|a, b| (&a.collateral_type, &a.borrow_type)
+            .cmp(&(&b.collateral_type, &b.borrow_type)));
 
         // Sort by user address, vault type
         all_user_infos.sort_by(|a, b| (&a.user_address, &a.collateral_type, &a.borrow_type)
             .cmp(&(&b.user_address, &b.collateral_type, &b.borrow_type)));
 
-        // Sort by vault type
-        all_vaults.sort_by(|a, b| (&a.collateral_type, &a.borrow_type)
-            .cmp(&(&b.collateral_type, &b.borrow_type)));
 
         let tx_result = insert_to_db(
             &mut conn,
             self.name(),
             start_version,
             end_version,
-            all_user_infos,
             all_vaults,
+            all_user_infos,
             all_vault_activities,
         );
         match tx_result {

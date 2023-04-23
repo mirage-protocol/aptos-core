@@ -5,7 +5,8 @@
 #![allow(clippy::unused_unit)]
 
 use super::{
-    vault_resources::{UserInfo, VaultModuleResource, Vault},
+    user_infos::UserInfo,
+    vaults::Vault,
     vault_events::VaultEvent,
 };
 use crate::{
@@ -15,13 +16,13 @@ use crate::{
 };
 use aptos_api_types::{
     Event as APIEvent, Transaction as APITransaction,
-    WriteSetChange as APIWriteSetChange, MoveType
+    WriteSetChange, MoveType,
 };
+
 use bigdecimal::BigDecimal;
 use field_count::FieldCount;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use aptos_logger::info;
 
 #[derive(Debug, Deserialize, FieldCount, Identifiable, Insertable, Serialize)]
 #[diesel(primary_key(
@@ -76,8 +77,8 @@ impl VaultActivity {
         transaction: &APITransaction
     ) -> (
         Vec<Self>,
-        HashMap<(String, String), UserInfo>,
         HashMap<(String, String), Vault>,
+        HashMap<(String, String), UserInfo>,
     ) {
         let mut vault_activities: Vec<VaultActivity> = Vec::new();
         let mut user_infos: HashMap<(String, String), UserInfo> = HashMap::new();
@@ -94,43 +95,25 @@ impl VaultActivity {
         };
 
         for wsc in writesets {
-            if let APIWriteSetChange::WriteResource(write_resource) = wsc {
-                let move_type = &write_resource.data.typ;
-                if VaultModuleResource::is_resource_supported(move_type) {
-                    let maybe_vault_resource =
-                        VaultModuleResource::from_write_resource(write_resource, txn_version);
+            let (maybe_vault, maybe_user_info) =
+                if let WriteSetChange::WriteResource(write_resource) = wsc {
+                    (
+                        Vault::from_write_resource(write_resource, txn_version, txn_timestamp)
+                            .unwrap(),
+                        UserInfo::from_write_resource(write_resource, txn_version, txn_timestamp)
+                        .unwrap(),
+                    )
+                } else {
+                    (None, None)
+                };
 
-                    if let Ok(parsed_resource) = maybe_vault_resource {
-                        let collateral_type = &move_type.generic_type_params[0].to_string();
-                        let borrow_type = &move_type.generic_type_params[1].to_string();
-
-                        match parsed_resource {
-                            VaultModuleResource::UserInfoResource(user_info_resource) => {
-                                let user_info = UserInfo::from_resource(
-                                    &user_info_resource,
-                                    &write_resource.address.to_string(),
-                                    collateral_type,
-                                    borrow_type,
-                                    txn_version,
-                                    txn_timestamp,
-                                );
-                                user_infos.insert((collateral_type.clone(), borrow_type.clone()), user_info);
-                            },
-                            VaultModuleResource::VaultResource(vault_resource) => {
-                                let vault = Vault::from_resource(
-                                    &vault_resource,
-                                    collateral_type,
-                                    borrow_type,
-                                    txn_version,
-                                    txn_timestamp,
-                                );
-                                vaults.insert((collateral_type.clone(), borrow_type.clone()), vault);
-                            }
-                        }
-                    }
-                }
-            };
-        }
+            if let Some(inner) = maybe_vault {
+                vaults.insert((inner.collateral_type.clone(), inner.borrow_type.clone()), inner);
+            }
+            if let Some(inner) = maybe_user_info {
+                user_infos.insert((inner.collateral_type.clone(), inner.borrow_type.clone()), inner);
+            }
+        };
 
         for (index, event) in events.iter().enumerate() {
             if let MoveType::Struct(inner) = &event.typ {
@@ -155,19 +138,10 @@ impl VaultActivity {
                 }
             }
         };
-
-        if !user_infos.is_empty() || !vault_activities.is_empty() {
-            info!(
-                "MirageProcessor {{ user infos: {:?} vault activities: {:?}",
-                user_infos,
-                vault_activities
-            );
-        }
-
         (
             vault_activities,
+            vaults,
             user_infos,
-            vaults
         )
     }
 
@@ -176,7 +150,7 @@ impl VaultActivity {
         collateral_type: &String,
         borrow_type: &String,
         event: &APIEvent,
-        vault_event: &VaultEvent,
+        parsed_event: &VaultEvent,
         txn_version: i64,
         txn_timestamp: chrono::NaiveDateTime,
         event_index: i64,
@@ -184,7 +158,7 @@ impl VaultActivity {
         let event_creation_number = event.guid.creation_number.0 as i64;
         let event_sequence_number = event.sequence_number.0 as i64;
 
-        let vault_activity_helper = match vault_event {
+        let vault_activity_helper = match parsed_event {
             VaultEvent::ExchangeRateEvent(inner) => VaultActivityHelper {
                 collateral_amount: None,
                 borrow_amount: None,
