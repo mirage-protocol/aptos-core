@@ -8,7 +8,6 @@ use super::vault_utils::{
 
 use crate::schema::vaults;
 
-
 use aptos_api_types::WriteResource;
 use bigdecimal::BigDecimal;
 use serde::{Deserialize, Serialize};
