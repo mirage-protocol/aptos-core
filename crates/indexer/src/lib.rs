@@ -1,3 +1,5 @@
+// Copyright © Mirage Protocol
+
 // Copyright © Aptos Foundation
 // SPDX-License-Identifier: Apache-2.0
 
@@ -11,7 +13,6 @@ extern crate diesel_migrations;
 #[macro_use]
 extern crate diesel;
 
-pub mod mirage_utils;
 pub mod counters;
 pub mod database;
 pub mod indexer;

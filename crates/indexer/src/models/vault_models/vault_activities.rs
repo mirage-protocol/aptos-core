@@ -6,13 +6,13 @@
 
 use super::{
     user_infos::UserInfo,
-    vaults::Vault,
     vault_events::VaultEvent,
+    vault_utils::{trunc_type, hash_types},
+    vaults::Vault,
 };
 use crate::{
     schema::vault_activities,
     util::parse_timestamp,
-    mirage_utils::{trunc_type, hash_types},
 };
 use aptos_api_types::{
     Event as APIEvent, Transaction as APITransaction,
@@ -86,6 +86,7 @@ impl VaultActivity {
 
         let (writesets, events, txn_version, txn_timestamp) = match &transaction {
             APITransaction::UserTransaction(inner) => (
+
                 &inner.info.changes,
                 &inner.events,
                 inner.info.version.0 as i64,

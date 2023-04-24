@@ -7,8 +7,9 @@
  * This file defines deserialized vault_events module types as defined in mirage protocol module.
  */
 
+use super::vault_utils::MIRAGE_ADDRESS;
+
 use crate::{
-    mirage_utils::MIRAGE_ADDRESS,
     util::standardize_address,
 };
 

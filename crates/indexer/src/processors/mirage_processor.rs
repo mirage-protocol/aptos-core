@@ -221,6 +221,10 @@ impl TransactionProcessor for MirageProcessor {
         all_user_infos.sort_by(|a, b| (&a.user_address, &a.collateral_type, &a.borrow_type)
             .cmp(&(&b.user_address, &b.collateral_type, &b.borrow_type)));
 
+        info!(
+            "MirageProcessor {{ processed: user info: {:?} vaults: {:?} vault activities: {:?}}}",
+            all_user_infos.len(), all_vaults.len(), all_vault_activities.len()
+        );
 
         let tx_result = insert_to_db(
             &mut conn,
