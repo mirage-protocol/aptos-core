@@ -24,6 +24,6 @@ repos:
         files: \.rs$
         args:
           - --license-filepath
-          - devtools/assets/license_header.txt
+          - devtools/assets/mirage_license_header.txt
           - --comment-style
           - //
