@@ -234,7 +234,7 @@ impl VaultActivity {
             },
             VaultEvent::RepayEvent(inner) => VaultActivityHelper {
                 collateral_amount: None,
-                borrow_amount: Some(inner.repay_amount.clone()),
+                borrow_amount: Some(inner.borrow_amount.clone()),
                 user_addr: Some(inner.user_addr.clone()),
                 withdraw_addr: None,
                 liquidator_addr: None,

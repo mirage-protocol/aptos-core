@@ -61,7 +61,7 @@ pub struct BorrowEvent {
 pub struct RepayEvent {
     pub user_addr: String,
     #[serde(deserialize_with = "deserialize_from_string")]
-    pub repay_amount: BigDecimal,
+    pub borrow_amount: BigDecimal,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
