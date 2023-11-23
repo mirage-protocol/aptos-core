@@ -83,6 +83,7 @@ CREATE TABLE limit_orders (
   margin_type VARCHAR(512) NOT NULL,
   perp_type VARCHAR(512) NOT NULL,
   id NUMERIC NOT NULL,
+  order_index NUMERIC NOT NULL,
   is_long BOOLEAN NOT NULL,
   is_increase BOOLEAN NOT NULL,
   position_size NUMERIC NOT NULL,

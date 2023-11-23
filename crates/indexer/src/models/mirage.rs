@@ -2,7 +2,7 @@
 
 use crate::util::{hash_str, truncate_str};
 
-pub const MIRAGE_ADDRESS: &str = "0x9e7f2c6a5c7de8d4160474564b7cafc072f2b7308abea1361d7efb3d51f012ac";
+pub const MIRAGE_ADDRESS: &str = "0x2fcf786835005f86fecba4f394f306e5444658f391bcaf301608ed78c8d64c65";
 pub const MIRAGE_TYPE_MAX_LENGTH: usize = 512;
 
 pub fn trunc_type(move_type: &str) -> String {

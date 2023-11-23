@@ -15,6 +15,7 @@ use crate::{
 use aptos_api_types::WriteResource;
 
 use bigdecimal::BigDecimal;
+use std::str::FromStr;
 use serde::{Deserialize, Serialize};
 use field_count::FieldCount;
 
@@ -29,6 +30,7 @@ pub struct LimitOrder {
     pub user_addr: String,
 
     pub id: BigDecimal,
+    pub order_index: BigDecimal,
 
     pub is_long: bool,
     pub is_increase: bool,
@@ -61,7 +63,8 @@ impl LimitOrder {
                 let mut result = Vec::new();
                 result.reserve_exact(inner.orders.len());
 
-                for order in &inner.orders {
+                for index in 0..inner.orders.len() {
+                    let order = &inner.orders[index];
                     result.push(LimitOrder {
                         transaction_version: txn_version,
                         user_addr: standardize_address(&user_addr),
@@ -69,6 +72,7 @@ impl LimitOrder {
                         margin_type: trunc_type(&margin_type),
                         perp_type: trunc_type(&perp_type),
                         id: order.id.clone(),
+                        order_index: BigDecimal::from_str(&index.to_string()).unwrap(),
                         is_long: order.is_long,
                         is_increase: order.is_increase,
                         position_size: order.position_size.clone(),

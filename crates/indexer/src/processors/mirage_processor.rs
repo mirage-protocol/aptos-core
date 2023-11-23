@@ -29,7 +29,7 @@ use crate::{
 };
 use aptos_api_types::Transaction as APITransaction;
 use async_trait::async_trait;
-use diesel::{result::Error, ExpressionMethods, PgConnection};
+use diesel::{result::Error, pg::upsert::excluded, ExpressionMethods, PgConnection};
 use field_count::FieldCount;
 use std::fmt::Debug;
 use aptos_logger::info;
@@ -370,7 +370,12 @@ fn insert_open_limit_orders(
             diesel::insert_into(schema::open_limit_orders::table)
                 .values(&item_to_insert[start_ind..end_ind])
                 .on_conflict(id)
-                .do_nothing(),
+                .do_update()
+                .set((
+                    transaction_timestamp.eq(excluded(transaction_timestamp)),
+                    transaction_version.eq(excluded(transaction_version)),
+                    inserted_at.eq(excluded(inserted_at)),
+                )),
                 None,
             )?;
     }

@@ -11,7 +11,7 @@ use super::{
 };
 use crate::{
     schema::vault_activities,
-    util::parse_timestamp,
+    util::{parse_timestamp, standardize_address},
     models::mirage::{trunc_type, hash_types}
 };
 use aptos_api_types::{
@@ -185,7 +185,7 @@ impl VaultActivity {
             VaultEvent::RegisterUserEvent(inner) => VaultActivityHelper {
                 collateral_amount: None,
                 borrow_amount: None,
-                user_addr: Some(inner.user_addr.clone()),
+                user_addr: Some(standardize_address(&inner.user_addr)),
                 withdraw_addr: None,
                 liquidator_addr: None,
                 accrued_amount: None,
@@ -197,7 +197,7 @@ impl VaultActivity {
             VaultEvent::AddCollateralEvent(inner) => VaultActivityHelper {
                 collateral_amount: Some(inner.collateral_amount.clone()),
                 borrow_amount: None,
-                user_addr: Some(inner.user_addr.clone()),
+                user_addr: Some(standardize_address(&inner.user_addr)),
                 withdraw_addr: None,
                 liquidator_addr: None,
                 accrued_amount: None,
@@ -209,7 +209,7 @@ impl VaultActivity {
             VaultEvent::RemoveCollateralEvent(inner) => VaultActivityHelper {
                 collateral_amount: Some(inner.collateral_amount.clone()),
                 borrow_amount: None,
-                user_addr: Some(inner.user_addr.clone()),
+                user_addr: Some(standardize_address(&inner.user_addr)),
                 withdraw_addr: None,
                 liquidator_addr: None,
                 accrued_amount: None,
@@ -221,7 +221,7 @@ impl VaultActivity {
             VaultEvent::BorrowEvent(inner) => VaultActivityHelper {
                 collateral_amount: None,
                 borrow_amount: Some(inner.borrow_amount.clone()),
-                user_addr: Some(inner.user_addr.clone()),
+                user_addr: Some(standardize_address(&inner.user_addr)),
                 withdraw_addr: None,
                 liquidator_addr: None,
                 accrued_amount: None,
@@ -233,7 +233,7 @@ impl VaultActivity {
             VaultEvent::RepayEvent(inner) => VaultActivityHelper {
                 collateral_amount: None,
                 borrow_amount: Some(inner.borrow_amount.clone()),
-                user_addr: Some(inner.user_addr.clone()),
+                user_addr: Some(standardize_address(&inner.user_addr)),
                 withdraw_addr: None,
                 liquidator_addr: None,
                 accrued_amount: None,
@@ -245,9 +245,9 @@ impl VaultActivity {
             VaultEvent::LiquidationEvent(inner) => VaultActivityHelper {
                 collateral_amount: Some(inner.collateral_amount.clone()),
                 borrow_amount: Some(inner.borrow_amount.clone()),
-                user_addr: Some(inner.user_addr.clone()),
+                user_addr: Some(standardize_address(&inner.user_addr)),
                 withdraw_addr: None,
-                liquidator_addr: Some(inner.liquidator_addr.clone()),
+                liquidator_addr: Some(standardize_address(&inner.liquidator_addr)),
                 accrued_amount: None,
                 rate: None,
                 fees_earned: None,

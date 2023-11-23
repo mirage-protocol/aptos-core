@@ -13,7 +13,7 @@ use crate::{
         open_limit_orders,
         trades,
     },
-    util::parse_timestamp,
+    util::{parse_timestamp, standardize_address},
     models::market_models::markets::{Market, MarketConfig},
     models::market_models::traders::{Position, PositionLimit},
     models::market_models::limit_orders::LimitOrder,
@@ -287,7 +287,7 @@ impl MarketActivity {
 
         let market_activity_helper = match parsed_event {
             MarketEvent::RegisterUserEvent(inner) => MarketActivityHelper {
-                user_addr: Some(inner.user_addr.clone()),
+                user_addr: Some(standardize_address(&inner.user_addr)),
                 position_limit: Some(inner.position_limit.clone()),
                 id: None,
                 perp_price: None,
@@ -310,7 +310,7 @@ impl MarketActivity {
                 next_funding_rate: None,
             },
             MarketEvent::UpdatePositionLimitEvent(inner) => MarketActivityHelper {
-                user_addr: Some(inner.user_addr.clone()),
+                user_addr: Some(standardize_address(&inner.user_addr)),
                 position_limit: Some(inner.position_limit.clone()),
                 id: None,
                 perp_price: None,
@@ -338,7 +338,7 @@ impl MarketActivity {
                     type_hash: hash_types(&margin_type, &perp_type),
                     margin_type: trunc_type(&margin_type),
                     perp_type: trunc_type(&perp_type),
-                    user_addr: inner.user_addr.clone(),
+                    user_addr: standardize_address(&inner.user_addr),
                     id: inner.id.clone(),
                     is_long: inner.is_long,
                     size: inner.position_size.clone(),
@@ -349,7 +349,7 @@ impl MarketActivity {
                 });
 
                 MarketActivityHelper {
-                    user_addr: Some(inner.user_addr.clone()),
+                    user_addr: Some(standardize_address(&inner.user_addr)),
                     position_limit: None,
                     id: Some(inner.id.clone()),
                     perp_price: Some(inner.opening_price.clone()),
@@ -379,7 +379,7 @@ impl MarketActivity {
                     type_hash: hash_types(&margin_type, &perp_type),
                     margin_type: trunc_type(&margin_type),
                     perp_type: trunc_type(&perp_type),
-                    user_addr: inner.user_addr.clone(),
+                    user_addr: standardize_address(&inner.user_addr),
                     id: inner.id.clone(),
                     is_long: inner.is_long,
                     size: inner.position_size.clone(),
@@ -390,7 +390,7 @@ impl MarketActivity {
                 });
 
                 MarketActivityHelper {
-                    user_addr: Some(inner.user_addr.clone()),
+                    user_addr: Some(standardize_address(&inner.user_addr)),
                     position_limit: None,
                     id: Some(inner.id.clone()),
                     perp_price: Some(inner.closing_price.clone()),
@@ -414,7 +414,7 @@ impl MarketActivity {
                 }
             },
             MarketEvent::UpdateMarginEvent(inner) => MarketActivityHelper {
-                user_addr: Some(inner.user_addr.clone()),
+                user_addr: Some(standardize_address(&inner.user_addr)),
                 position_limit: None,
                 id: Some(inner.id.clone()),
                 perp_price: None,
@@ -443,7 +443,7 @@ impl MarketActivity {
                     type_hash: hash_types(&margin_type, &perp_type),
                     margin_type: trunc_type(&margin_type),
                     perp_type: trunc_type(&perp_type),
-                    user_addr: inner.user_addr.clone(),
+                    user_addr: standardize_address(&inner.user_addr),
                     id: inner.id.clone(),
                     is_long: inner.is_long,
                     fee: inner.fee.clone(),
@@ -454,7 +454,7 @@ impl MarketActivity {
                 });
 
                 MarketActivityHelper {
-                    user_addr: Some(inner.user_addr.clone()),
+                    user_addr: Some(standardize_address(&inner.user_addr)),
                     position_limit: None,
                     id: Some(inner.id.clone()),
                     perp_price: Some(inner.new_opening_price.clone()),
@@ -478,7 +478,7 @@ impl MarketActivity {
                 }
             },
             MarketEvent::LiquidatePositionEvent(inner) => MarketActivityHelper {
-                user_addr: Some(inner.user_addr.clone()),
+                user_addr: Some(standardize_address(&inner.user_addr)),
                 position_limit: None,
                 id: Some(inner.id.clone()),
                 perp_price: None,
@@ -488,7 +488,7 @@ impl MarketActivity {
                 maintenance_margin: None,
                 fee: None,
                 pnl: None,
-                caller_addr: Some(inner.liquidator_addr.clone()),
+                caller_addr: Some(standardize_address(&inner.liquidator_addr)),
                 take_profit_price: None,
                 stop_loss_price: None,
                 trigger_price: None,
@@ -501,7 +501,7 @@ impl MarketActivity {
                 next_funding_rate: None,
             },
             MarketEvent::UpdateTpslEvent(inner) => MarketActivityHelper {
-                user_addr: Some(inner.user_addr.clone()),
+                user_addr: Some(standardize_address(&inner.user_addr)),
                 position_limit: None,
                 id: Some(inner.id.clone()),
                 perp_price: None,
@@ -524,7 +524,7 @@ impl MarketActivity {
                 next_funding_rate: None,
             },
             MarketEvent::TriggerTpslEvent(inner) => MarketActivityHelper {
-                user_addr: Some(inner.user_addr.clone()),
+                user_addr: Some(standardize_address(&inner.user_addr)),
                 position_limit: None,
                 id: Some(inner.id.clone()),
                 perp_price: None,
@@ -534,7 +534,7 @@ impl MarketActivity {
                 maintenance_margin: None,
                 fee: None,
                 pnl: None,
-                caller_addr: Some(inner.caller_addr.clone()),
+                caller_addr: Some(standardize_address(&inner.caller_addr)),
                 take_profit_price: None,
                 stop_loss_price: None,
                 trigger_price: None,
@@ -552,13 +552,13 @@ impl MarketActivity {
                     type_hash: hash_types(&margin_type, &perp_type),
                     margin_type: trunc_type(&margin_type),
                     perp_type: trunc_type(&perp_type),
-                    user_addr: inner.user_addr.clone(),
+                    user_addr: standardize_address(&inner.user_addr),
                     id: inner.id.clone(),
                     transaction_timestamp: txn_timestamp,
                 });
 
                 MarketActivityHelper {
-                    user_addr: Some(inner.user_addr.clone()),
+                    user_addr: Some(standardize_address(&inner.user_addr)),
                     position_limit: None,
                     id: Some(inner.id.clone()),
                     perp_price: None,
@@ -582,7 +582,7 @@ impl MarketActivity {
                 }
             }
             MarketEvent::UpdateLimitOrderEvent(inner) => MarketActivityHelper {
-                user_addr: Some(inner.user_addr.clone()),
+                user_addr: Some(standardize_address(&inner.user_addr)),
                 position_limit: None,
                 id: Some(inner.id.clone()),
                 perp_price: None,
@@ -610,13 +610,13 @@ impl MarketActivity {
                     type_hash: hash_types(&margin_type, &perp_type),
                     margin_type: trunc_type(&margin_type),
                     perp_type: trunc_type(&perp_type),
-                    user_addr: inner.user_addr.clone(),
+                    user_addr: standardize_address(&inner.user_addr),
                     id: inner.id.clone(),
                     transaction_timestamp: txn_timestamp,
                 });
 
                 MarketActivityHelper {
-                    user_addr: Some(inner.user_addr.clone()),
+                    user_addr: Some(standardize_address(&inner.user_addr)),
                     position_limit: None,
                     id: Some(inner.id.clone()),
                     perp_price: None,
@@ -645,13 +645,13 @@ impl MarketActivity {
                     type_hash: hash_types(&margin_type, &perp_type),
                     margin_type: trunc_type(&margin_type),
                     perp_type: trunc_type(&perp_type),
-                    user_addr: inner.user_addr.clone(),
+                    user_addr: standardize_address(&inner.user_addr),
                     id: inner.id.clone(),
                     transaction_timestamp: txn_timestamp,
                 });
 
                 MarketActivityHelper {
-                    user_addr: Some(inner.user_addr.clone()),
+                    user_addr: Some(standardize_address(&inner.user_addr)),
                     position_limit: None,
                     id: Some(inner.id.clone()),
                     perp_price: None,
@@ -661,7 +661,7 @@ impl MarketActivity {
                     maintenance_margin: None,
                     fee: None,
                     pnl: None,
-                    caller_addr: Some(inner.caller_addr.clone()),
+                    caller_addr: Some(standardize_address(&inner.caller_addr)),
                     take_profit_price: None,
                     stop_loss_price: None,
                     trigger_price: None,
