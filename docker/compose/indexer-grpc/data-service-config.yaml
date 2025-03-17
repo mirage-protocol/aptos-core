@@ -9,6 +9,6 @@ server_config:
   disable_auth_check: true
   whitelisted_auth_tokens: []
   file_store_config:
-    file_store_type: LocalFileStore
-    local_file_store_path: /opt/aptos/file-store
+    file_store_type: GcsFileStore
+    local_file_store_path: mirage-stream-cache-bucket-movement
   redis_read_replica_address: redis://redis-replica:6379
