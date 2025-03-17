@@ -335,7 +335,7 @@ async fn process_streaming_response(
     let mut tps_calculator = MovingAverage::new(10_000);
     let mut transaction_count = 0;
     // 3. Set up the cache operator with init signal.
-    let init_signal = match resp_stream.next().await {
+    let mut init_signal = match resp_stream.next().await {
         Some(Ok(r)) => r,
         _ => {
             bail!("[Indexer Cache] Streaming error: no response.");
@@ -357,33 +357,40 @@ async fn process_streaming_response(
         }
     };
     let mut batch_start_time = std::time::Instant::now();
-
+    let mut is_first = true;
     let mut tasks_to_run = vec![];
     // 4. Process the streaming response.
     loop {
         let download_start_time = std::time::Instant::now();
-        let received = match resp_stream.next().await {
-            Some(r) => r,
-            _ => {
-                error!(
-                    service_type = SERVICE_TYPE,
-                    "[Indexer Cache] Streaming error: no response."
-                );
-                ERROR_COUNT.with_label_values(&["streaming_error"]).inc();
-                break;
-            },
-        };
-        // 10 batches doewnload + slowest processing& uploading task
-        let received: TransactionsResponse = match received {
-            Ok(r) => r,
-            Err(err) => {
-                error!(
-                    service_type = SERVICE_TYPE,
-                    "[Indexer Cache] Streaming error: {}", err
-                );
-                ERROR_COUNT.with_label_values(&["streaming_error"]).inc();
-                break;
-            },
+        let received = if (is_first) {
+            is_first = false;
+            init_signal.clone()
+        } else { 
+            match resp_stream.next().await {
+                Some(r) => {
+                    // Convert Result<TransactionsResponse, tonic::Status> to TransactionsResponse
+                    // by handling the error case
+                    match r {
+                        Ok(response) => response,
+                        Err(status) => {
+                            error!(
+                                service_type = SERVICE_TYPE,
+                                "[Indexer Cache] Response error: {}.", status
+                            );
+                            ERROR_COUNT.with_label_values(&["response_error"]).inc();
+                            return Err(anyhow::Error::from(status));
+                        }
+                    }
+                },
+                _ => {
+                    error!(
+                        service_type = SERVICE_TYPE,
+                        "[Indexer Cache] Streaming error: no response."
+                    );
+                    ERROR_COUNT.with_label_values(&["streaming_error"]).inc();
+                    break;
+                },
+            }
         };
 
         // if received.chain_id as u64 != fullnode_chain_id as u64 {
