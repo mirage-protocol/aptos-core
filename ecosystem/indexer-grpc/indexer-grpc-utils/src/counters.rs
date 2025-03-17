@@ -33,6 +33,8 @@ pub enum IndexerGrpcStep {
     CacheWorkerTxnsProcessed,
     // [Indexer Cache] Successfully process current batch.
     CacheWorkerBatchProcessed,
+    // [Indexer Cache] Cache Forced to update counter.
+    CacheWorkerForcedUpdate,
 
     // [File worker] Fetch transactions from cache.
     FilestoreFetchTxns,
@@ -79,6 +81,7 @@ impl IndexerGrpcStep {
             IndexerGrpcStep::CacheWorkerTxnEncoded => "2",
             IndexerGrpcStep::CacheWorkerTxnsProcessed => "3",
             IndexerGrpcStep::CacheWorkerBatchProcessed => "4",
+            IndexerGrpcStep::CacheWorkerForcedUpdate => "4.20",
             // Filestore worker steps
             IndexerGrpcStep::FilestoreProcessedBatch => "1",
             IndexerGrpcStep::FilestoreFetchTxns => "1.0",
@@ -121,6 +124,7 @@ impl IndexerGrpcStep {
             IndexerGrpcStep::CacheWorkerTxnEncoded => "[Indexer Cache] Encoded transactions.",
             IndexerGrpcStep::CacheWorkerTxnsProcessed => "[Indexer Cache] Processed transactions in a batch.",
             IndexerGrpcStep::CacheWorkerBatchProcessed => "[Indexer Cache] Successfully process current batch.",
+            IndexerGrpcStep::CacheWorkerForcedUpdate => "[Indexer Cache] Forced update",
             // Filestore worker steps
             IndexerGrpcStep::FilestoreProcessedBatch => "[File worker] Successfully process current batch.",
             IndexerGrpcStep::FilestoreFetchTxns => "[File worker] Fetch transactions from cache.",

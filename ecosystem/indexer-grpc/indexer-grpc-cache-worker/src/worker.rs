@@ -359,6 +359,10 @@ async fn process_streaming_response(
     let mut batch_start_time = std::time::Instant::now();
     let mut is_first = true;
     let mut tasks_to_run = vec![];
+    
+    // Define the transaction threshold for forced updates (10,000 transactions)
+    const TRANSACTION_UPDATE_THRESHOLD: u64 = 10_000;
+    
     // 4. Process the streaming response.
     loop {
         let download_start_time = std::time::Instant::now();
@@ -415,6 +419,58 @@ async fn process_streaming_response(
                     tps_calculator.tick_now(num_of_transactions);
 
                     tasks_to_run.push(task);
+                    
+                    // Check if we've reached or exceeded the transaction threshold
+                    if transaction_count >= TRANSACTION_UPDATE_THRESHOLD {
+                        // Execute all pending tasks
+                        let result = join_all(tasks_to_run).await;
+                        if result
+                            .iter()
+                            .any(|r| (r.is_err() || r.as_ref().unwrap().is_err()))
+                        {
+                            error!(
+                                current_version = current_version,
+                                transaction_count = transaction_count,
+                                "[Indexer Cache] Process transactions from fullnode failed during forced update."
+                            );
+                            ERROR_COUNT.with_label_values(&["response_error"]).inc();
+                            panic!("Error happens when processing transactions from fullnode.");
+                        }
+                        
+                        // Update the cache latest version
+                        if let Err(e) = cache_operator
+                            .update_cache_latest_version(transaction_count, current_version)
+                            .await
+                        {
+                            error!(
+                                current_version = current_version,
+                                transaction_count = transaction_count,
+                                "[Indexer Cache] Failed to update the latest version in the cache: {}",
+                                e
+                            );
+                            ERROR_COUNT.with_label_values(&["cache_update_error"]).inc();
+                            return Err(e.context("Failed to update the latest version in the cache"));
+                        }
+                        
+                        // Log the forced update
+                        log_grpc_step(
+                            SERVICE_TYPE,
+                            IndexerGrpcStep::CacheWorkerForcedUpdate,
+                            Some((current_version - transaction_count) as i64),
+                            Some((current_version - 1) as i64),
+                            None,
+                            None,
+                            Some(batch_start_time.elapsed().as_secs_f64()),
+                            Some(size_in_bytes),
+                            Some(transaction_count as i64),
+                            None,
+                        );
+                        
+                        // Reset transaction count and start time, clear tasks
+                        transaction_count = 0;
+                        batch_start_time = std::time::Instant::now();
+                        tasks_to_run = vec![];
+                    }
                 },
                 GrpcDataStatus::StreamInit(new_version) => {
                     error!(
