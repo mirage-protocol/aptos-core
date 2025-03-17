@@ -4,4 +4,5 @@ server_config:
   file_store_config:
     file_store_type: GcsFileStore
     gcs_file_store_bucket_name: mirage-stream-cache-bucket-movement
+    gcs_file_store_service_account_key_path: /opt/aptos/movement_grpc_sa_key.json
   chain_id: 126

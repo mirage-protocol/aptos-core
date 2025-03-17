@@ -7,6 +7,7 @@
 
 # Ignore wallet mnemonic files used for deterministic key derivation
 *.mnemonic
+movement_grpc_sa_key.json
 
 # GDB related
 **/.gdb_history

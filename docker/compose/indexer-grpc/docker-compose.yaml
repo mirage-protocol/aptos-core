@@ -37,6 +37,9 @@ services:
       - shared
     restart: unless-stopped
     volumes:
+      - type: bind
+        source: ./movement_grpc_sa_key.json
+        target: /opt/aptos/movement_grpc_sa_key.json
       - type: volume
         source: indexer-grpc-file-store
         target: /opt/aptos/file-store
@@ -55,6 +58,9 @@ services:
       - shared
     restart: unless-stopped
     volumes:
+      - type: bind
+        source: ./movement_grpc_sa_key.json
+        target: /opt/aptos/movement_grpc_sa_key.json
       - type: volume
         source: indexer-grpc-file-store
         target: /opt/aptos/file-store
@@ -73,6 +79,9 @@ services:
       - shared
     restart: unless-stopped
     volumes:
+      - type: bind
+        source: ./movement_grpc_sa_key.json
+        target: /opt/aptos/movement_grpc_sa_key.json
       - type: volume
         source: indexer-grpc-file-store
         target: /opt/aptos/file-store
