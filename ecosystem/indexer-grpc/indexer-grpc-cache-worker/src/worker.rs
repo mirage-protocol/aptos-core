@@ -171,7 +171,6 @@ impl Worker {
                 self.cache_storage_format,
                 file_store_metadata,
                 response.into_inner(),
-                starting_version,
             )
             .await?;
 
@@ -332,13 +331,12 @@ async fn process_streaming_response(
     file_store_metadata: FileStoreMetadata,
     mut resp_stream: impl futures_core::Stream<Item = Result<TransactionsResponse, tonic::Status>>
         + std::marker::Unpin,
-    starting_version: u64,
 ) -> Result<()> {
     let mut tps_calculator = MovingAverage::new(10_000);
     let mut transaction_count = 0;
     let mut cache_operator = CacheOperator::new(conn, cache_storage_format);
 
-    let mut current_version = starting_version;
+    let mut current_version = file_store_metadata.version;
     let mut batch_start_time = std::time::Instant::now();
     let mut tasks_to_run = vec![];
     
