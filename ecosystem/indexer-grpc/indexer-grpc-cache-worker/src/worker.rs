@@ -348,7 +348,14 @@ async fn process_streaming_response(
     //         .await
     //         .context("[Indexer Cache] Failed to verify init signal")?;
 
-    let mut current_version = init_signal.processed_range.unwrap().first_version;
+    let mut current_version = match &init_signal.processed_range {
+        Some(range) => range.first_version,
+        None => {
+            // Handle the None case - could log an error, return early, etc.
+            // e.g., log::error!("processed_range was None");
+            Default::default()
+        }
+    };
     let mut batch_start_time = std::time::Instant::now();
 
     let mut tasks_to_run = vec![];

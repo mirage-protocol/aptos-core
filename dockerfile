@@ -31,13 +31,13 @@ COPY . .
 #     cargo build --release || echo "Workspace-level build failed, trying individual packages..."
 
 # Attempt to build each package individually
-RUN cargo build -p aptos-indexer-grpc-cache-worker --release || echo "Failed to build indexer-grpc-cache-worker"
+RUN cargo build -p aptos-indexer-grpc-cache-worker --release
 
-RUN cargo build -p aptos-indexer-grpc-data-service --release || echo "Failed to build indexer-grpc-data-service"
+RUN cargo build -p aptos-indexer-grpc-data-service --release
 
 # RUN cargo build -p aptos-indexer-grpc-data-service-v2 --release || echo "Failed to build indexer-grpc-data-service-v2"
 
-RUN cargo build -p aptos-indexer-grpc-file-store --release || echo "Failed to build indexer-grpc-file-store"
+RUN cargo build -p aptos-indexer-grpc-file-store --release
 
 # RUN cargo build -p aptos-indexer-grpc-file-store-backfiller --release || echo "Failed to build indexer-grpc-file-store-backfiller"
 
