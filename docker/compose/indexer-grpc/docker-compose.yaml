@@ -6,45 +6,38 @@
 # - indexer-grpc-data-service
 # 
 # The indexer-grpc also requires a fullnode to be running with the indexer-grpc
-# feature enabled. This can be done using the `validator-testing` compose file
-# which starts with a local single-node network. The shared docker network
-# then connects the two compose files together.
+# feature enabled. This connects to your existing movement-full-node.
 #
-# To start the services, run `docker-compose up -d`
+# To start the services, run `docker-compose -p indexer-grpc -f this-file.yml up -d`
 version: "3.8"
 services:
   redis:
     image: ${REDIS_IMAGE_REPO:-redis}:7.2
     command: redis-server --appendonly yes
     networks:
-      shared:
-        ipv4_address:  172.16.1.12
+      - shared
     restart: unless-stopped
     expose:
       - 6379
     ports:
       - 6379:6379
-
   redis-replica:
     image: ${REDIS_IMAGE_REPO:-redis}:7.2
     command: redis-server --replicaof redis 6379
     networks:
-      shared:
-        ipv4_address: 172.16.1.22
+      - shared
     restart: unless-stopped
     expose:
       - 6379
     depends_on:
       - redis
-
   indexer-grpc-cache-worker:
     image: "${INDEXER_GRPC_IMAGE_REPO:-aptoslabs/indexer-grpc}:${IMAGE_TAG:-main}"
     networks:
-      shared:
-        ipv4_address: 172.16.1.13
+      - shared
     restart: unless-stopped
     volumes:
-      - type: volume # XXX: needed now before refactor https://github.com/aptos-labs/aptos-core/pull/8139
+      - type: volume
         source: indexer-grpc-file-store
         target: /opt/aptos/file-store
       - type: bind
@@ -56,12 +49,10 @@ services:
       - '/opt/aptos/cache-worker-config.yaml'
     depends_on:
       - redis
-
   indexer-grpc-file-store:
     image: "${INDEXER_GRPC_IMAGE_REPO:-aptoslabs/indexer-grpc}:${IMAGE_TAG:-main}"
     networks:
-      shared:
-        ipv4_address: 172.16.1.14
+      - shared
     restart: unless-stopped
     volumes:
       - type: volume
@@ -76,15 +67,13 @@ services:
       - '/opt/aptos/file-store-config.yaml'
     depends_on:
       - redis
-
   indexer-grpc-data-service:
     image: "${INDEXER_GRPC_IMAGE_REPO:-aptoslabs/indexer-grpc}:${IMAGE_TAG:-main}"
     networks:
-      shared:
-        ipv4_address: 172.16.1.15
+      - shared
     restart: unless-stopped
     volumes:
-      - type: volume # XXX: needed now before refactor https://github.com/aptos-labs/aptos-core/pull/8139
+      - type: volume
         source: indexer-grpc-file-store
         target: /opt/aptos/file-store
       - type: bind
@@ -109,11 +98,11 @@ services:
       - indexer-grpc-file-store
       - redis-replica
 
-# This joins the indexer-grpc compose with the validator-testnet compose using a shared docker network
+# This connects to your existing movement-full-node network
 networks:
   shared:
     external: true
-    name: "aptos-docker-compose-shared"
+    name: "movement-full-node_default"
 
 volumes:
   indexer-grpc-file-store:
