@@ -340,26 +340,19 @@ impl<T: redis::aio::ConnectionLike + Send + Clone> CacheOperator<T> {
         num_of_versions: u64,
         version: u64,
     ) -> anyhow::Result<()> {
-        let script = redis::Script::new(CACHE_SCRIPT_UPDATE_LATEST_VERSION);
         tracing::debug!(
             num_of_versions = num_of_versions,
             version = version,
             "Updating latest version in cache."
         );
-        match script
-            .key(CACHE_KEY_LATEST_VERSION)
-            .arg(num_of_versions)
+        redis::cmd("SET")
+            .arg(CACHE_KEY_LATEST_VERSION)
             .arg(version)
-            .invoke_async(&mut self.conn)
+            .arg("NX")
+            .query_async(&mut self.conn)
             .await
-            .context("Redis latest version update failed.")?
-        {
-            2 => {
-                tracing::error!(version=version, "Redis latest version update failed. The version is beyond the next expected version.");
-                Err(anyhow::anyhow!("Version is not right."))
-            },
-            _ => Ok(()),
-        }
+            .context("Redis latest_version check failed.")?;
+        Ok(())
     }
 
     pub async fn get_transactions_with_durations(
