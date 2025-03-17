@@ -340,8 +340,8 @@ async fn process_streaming_response(
     let mut batch_start_time = std::time::Instant::now();
     let mut tasks_to_run = vec![];
     
-    // Define the transaction threshold for forced updates (10,000 transactions)
-    const TRANSACTION_UPDATE_THRESHOLD: u64 = 10_000;
+    // Define the transaction threshold for forced updates (25 transactions)
+    const TRANSACTION_UPDATE_THRESHOLD: u64 = 25;
     
     // Process the streaming response.
     loop {
@@ -408,7 +408,7 @@ async fn process_streaming_response(
                         
                         // Update the cache latest version
                         if let Err(e) = cache_operator
-                            .update_cache_latest_version(current_version,transaction_count)
+                            .update_cache_latest_version(transaction_count, current_version)
                             .await
                         {
                             error!(
