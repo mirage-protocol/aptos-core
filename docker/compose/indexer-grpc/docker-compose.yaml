@@ -32,7 +32,7 @@ services:
     depends_on:
       - redis
   indexer-grpc-cache-worker:
-    image: "${INDEXER_GRPC_IMAGE_REPO:-aptoslabs/indexer-grpc}:aptos-indexer-grpc-v1.7.0"
+    image: "${INDEXER_GRPC_IMAGE_REPO:-aptoslabs/indexer-grpc}:aptos-indexer-grpc-v1.8.0"
     networks:
       - shared
     restart: unless-stopped
@@ -50,7 +50,7 @@ services:
     depends_on:
       - redis
   indexer-grpc-file-store:
-    image: "${INDEXER_GRPC_IMAGE_REPO:-aptoslabs/indexer-grpc}:aptos-indexer-grpc-v1.7.0"
+    image: "${INDEXER_GRPC_IMAGE_REPO:-aptoslabs/indexer-grpc}:aptos-indexer-grpc-v1.8.0"
     networks:
       - shared
     restart: unless-stopped
@@ -68,7 +68,7 @@ services:
     depends_on:
       - redis
   indexer-grpc-data-service:
-    image: "${INDEXER_GRPC_IMAGE_REPO:-aptoslabs/indexer-grpc}:aptos-indexer-grpc-v1.7.0"
+    image: "${INDEXER_GRPC_IMAGE_REPO:-aptoslabs/indexer-grpc}:aptos-indexer-grpc-v1.8.0"
     networks:
       - shared
     restart: unless-stopped
