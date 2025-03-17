@@ -348,7 +348,6 @@ impl<T: redis::aio::ConnectionLike + Send + Clone> CacheOperator<T> {
         redis::cmd("SET")
             .arg(CACHE_KEY_LATEST_VERSION)
             .arg(version)
-            .arg("NX")
             .query_async(&mut self.conn)
             .await
             .context("Redis latest_version check failed.")?;
