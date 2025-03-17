@@ -171,6 +171,7 @@ impl Worker {
                 self.cache_storage_format,
                 file_store_metadata,
                 response.into_inner(),
+                starting_version,
             )
             .await?;
 
@@ -331,75 +332,45 @@ async fn process_streaming_response(
     file_store_metadata: FileStoreMetadata,
     mut resp_stream: impl futures_core::Stream<Item = Result<TransactionsResponse, tonic::Status>>
         + std::marker::Unpin,
+    starting_version: u64,
 ) -> Result<()> {
     let mut tps_calculator = MovingAverage::new(10_000);
     let mut transaction_count = 0;
-    // 3. Set up the cache operator with init signal.
-    let mut init_signal = match resp_stream.next().await {
-        Some(Ok(r)) => r,
-        _ => {
-            bail!("[Indexer Cache] Streaming error: no response.");
-        },
-    };
     let mut cache_operator = CacheOperator::new(conn, cache_storage_format);
 
-    // let (fullnode_chain_id, starting_version) =
-    //     verify_fullnode_init_signal(&mut cache_operator, init_signal, file_store_metadata)
-    //         .await
-    //         .context("[Indexer Cache] Failed to verify init signal")?;
-
-    let mut current_version = match &init_signal.processed_range {
-        Some(range) => range.first_version,
-        None => {
-            // Handle the None case - could log an error, return early, etc.
-            // e.g., log::error!("processed_range was None");
-            Default::default()
-        }
-    };
+    let mut current_version = starting_version;
     let mut batch_start_time = std::time::Instant::now();
-    let mut is_first = true;
     let mut tasks_to_run = vec![];
     
     // Define the transaction threshold for forced updates (10,000 transactions)
     const TRANSACTION_UPDATE_THRESHOLD: u64 = 10_000;
     
-    // 4. Process the streaming response.
+    // Process the streaming response.
     loop {
         let download_start_time = std::time::Instant::now();
-        let received = if (is_first) {
-            is_first = false;
-            init_signal.clone()
-        } else { 
-            match resp_stream.next().await {
-                Some(r) => {
-                    // Convert Result<TransactionsResponse, tonic::Status> to TransactionsResponse
-                    // by handling the error case
-                    match r {
-                        Ok(response) => response,
-                        Err(status) => {
-                            error!(
-                                service_type = SERVICE_TYPE,
-                                "[Indexer Cache] Response error: {}.", status
-                            );
-                            ERROR_COUNT.with_label_values(&["response_error"]).inc();
-                            return Err(anyhow::Error::from(status));
-                        }
-                    }
-                },
-                _ => {
+        
+        // Get the next response from the stream
+        let received = match resp_stream.next().await {
+            Some(r) => match r {
+                Ok(response) => response,
+                Err(status) => {
                     error!(
                         service_type = SERVICE_TYPE,
-                        "[Indexer Cache] Streaming error: no response."
+                        "[Indexer Cache] Response error: {}.", status
                     );
-                    ERROR_COUNT.with_label_values(&["streaming_error"]).inc();
-                    break;
-                },
-            }
+                    ERROR_COUNT.with_label_values(&["response_error"]).inc();
+                    return Err(anyhow::Error::from(status));
+                }
+            },
+            None => {
+                error!(
+                    service_type = SERVICE_TYPE,
+                    "[Indexer Cache] Streaming error: no response."
+                );
+                ERROR_COUNT.with_label_values(&["streaming_error"]).inc();
+                break;
+            },
         };
-
-        // if received.chain_id as u64 != fullnode_chain_id as u64 {
-        //     panic!("[Indexer Cache] Chain id mismatch happens during data streaming.");
-        // }
 
         let size_in_bytes = received.encoded_len();
         match process_transactions_from_node_response(
@@ -439,7 +410,7 @@ async fn process_streaming_response(
                         
                         // Update the cache latest version
                         if let Err(e) = cache_operator
-                            .update_cache_latest_version(transaction_count, current_version)
+                            .update_cache_latest_version(current_version,transaction_count)
                             .await
                         {
                             error!(
@@ -475,9 +446,9 @@ async fn process_streaming_response(
                 GrpcDataStatus::StreamInit(new_version) => {
                     error!(
                         current_version = new_version,
-                        "[Indexer Cache] Init signal received twice."
+                        "[Indexer Cache] Init signal received unexpectedly."
                     );
-                    ERROR_COUNT.with_label_values(&["data_init_twice"]).inc();
+                    ERROR_COUNT.with_label_values(&["unexpected_init_signal"]).inc();
                     break;
                 },
                 GrpcDataStatus::BatchEnd {
