@@ -10,5 +10,5 @@ server_config:
   whitelisted_auth_tokens: []
   file_store_config:
     file_store_type: GcsFileStore
-    local_file_store_path: mirage-stream-cache-bucket-movement
+    gcs_file_store_bucket_name: mirage-stream-cache-bucket-movement
   redis_read_replica_address: redis://redis-replica:6379

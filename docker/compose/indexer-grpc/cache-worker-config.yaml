@@ -3,5 +3,5 @@ server_config:
   fullnode_grpc_address: http://movement-full-node:30734
   file_store_config:
     file_store_type: GcsFileStore
-    local_file_store_path: mirage-stream-cache-bucket-movement
+    gcs_file_store_bucket_name: mirage-stream-cache-bucket-movement
   redis_main_instance_address: redis://redis:6379
