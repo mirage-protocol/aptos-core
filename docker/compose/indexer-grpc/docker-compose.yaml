@@ -32,7 +32,7 @@ services:
     depends_on:
       - redis
   indexer-grpc-cache-worker:
-    image: "us-central1-docker.pkg.dev/citric-plexus-421319/mirage-images/mirage-grpc-worker:v0.0.3"
+    image: "us-central1-docker.pkg.dev/citric-plexus-421319/mirage-images/mirage-grpc-worker:v0.0.4"
     networks:
       - shared
     restart: unless-stopped
@@ -50,7 +50,7 @@ services:
     depends_on:
       - redis
   indexer-grpc-file-store:
-    image: "us-central1-docker.pkg.dev/citric-plexus-421319/mirage-images/mirage-grpc-worker:v0.0.3"
+    image: "us-central1-docker.pkg.dev/citric-plexus-421319/mirage-images/mirage-grpc-worker:v0.0.4"
     networks:
       - shared
     restart: unless-stopped
@@ -68,7 +68,7 @@ services:
     depends_on:
       - redis
   indexer-grpc-data-service:
-    image: "us-central1-docker.pkg.dev/citric-plexus-421319/mirage-images/mirage-grpc-worker:v0.0.3"
+    image: "us-central1-docker.pkg.dev/citric-plexus-421319/mirage-images/mirage-grpc-worker:v0.0.4"
     networks:
       - shared
     restart: unless-stopped
