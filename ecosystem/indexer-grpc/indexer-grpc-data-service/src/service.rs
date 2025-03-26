@@ -650,27 +650,28 @@ fn ensure_sequential_transactions(mut batches: Vec<Vec<Transaction>>) -> Vec<Tra
 
             // Otherwise there is a gap
             if prev_end + 1 != start_version {
-                NUM_MULTI_FETCH_OVERLAPPED_VERSIONS
-                    .with_label_values(&[SERVICE_TYPE, "gap"])
-                    .inc_by(prev_end - start_version + 1);
+                //TODO THIS IS BAD F
+                // NUM_MULTI_FETCH_OVERLAPPED_VERSIONS
+                //     .with_label_values(&[SERVICE_TYPE, "gap"])
+                //     .inc_by(prev_end - start_version + 1);
 
-                tracing::error!(
-                    batch_first_version = first_version,
-                    batch_last_version = last_version,
-                    start_version = start_version,
-                    end_version = end_version,
-                    prev_start = ?prev_start,
-                    prev_end = prev_end,
-                    "[Filestore] Gaps or dupes in processing version data"
-                );
-                panic!("[Filestore] Gaps in processing data batch_first_version: {}, batch_last_version: {}, start_version: {}, end_version: {}, prev_start: {:?}, prev_end: {:?}",
-                       first_version,
-                       last_version,
-                       start_version,
-                       end_version,
-                       prev_start,
-                       prev_end,
-                );
+                // tracing::error!(
+                //     batch_first_version = first_version,
+                //     batch_last_version = last_version,
+                //     start_version = start_version,
+                //     end_version = end_version,
+                //     prev_start = ?prev_start,
+                //     prev_end = prev_end,
+                //     "[Filestore] Gaps or dupes in processing version data"
+                // );
+                // panic!("[Filestore] Gaps in processing data batch_first_version: {}, batch_last_version: {}, start_version: {}, end_version: {}, prev_start: {:?}, prev_end: {:?}",
+                //        first_version,
+                //        last_version,
+                //        start_version,
+                //        end_version,
+                //        prev_start,
+                //        prev_end,
+                // );
             }
         }
 

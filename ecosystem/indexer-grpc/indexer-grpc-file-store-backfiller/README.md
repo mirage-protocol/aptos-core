@@ -15,6 +15,17 @@ schema so that the changes can surface up.
 
 ## How to run it.
 
+gcloud iam service-accounts create movement-grpc-stream-sa \
+  --description="Service account for Movement Grpc Stream in Docker container" \
+  --display-name="Movement Grpc Stream Service Account"
+
+  gcloud storage buckets add-iam-policy-binding gs://mirage-stream-cache-bucket-movement \
+  --member="serviceAccount:movement-grpc-stream-sa@citric-plexus-421319.iam.gserviceaccount.com" \
+  --role="roles/storage.objectAdmin"
+
+  gcloud iam service-accounts keys create movement_grpc_sa_key.json \
+  --iam-account=movement-grpc-stream-sa@citric-plexus-421319.iam.gserviceaccount.com
+
 Example of config: 
 
 ```
