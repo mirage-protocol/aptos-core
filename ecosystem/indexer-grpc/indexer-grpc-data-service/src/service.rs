@@ -916,25 +916,25 @@ async fn channel_send_multiple_with_timeout(
     let overall_end_txn_timestamp = overall_end_txn.clone().timestamp;
 
     for resp_item in resp_items {
-        let send_start_time = Instant::now();
-        let response_size = resp_item.encoded_len();
-        let num_of_transactions = resp_item.transactions.len();
-        let start_version = resp_item.transactions.first().unwrap().version;
-        let end_version = resp_item.transactions.last().unwrap().version;
-        let start_version_txn_timestamp = resp_item
-            .transactions
-            .first()
-            .unwrap()
-            .timestamp
-            .as_ref()
-            .unwrap();
-        let end_version_txn_timestamp = resp_item
-            .transactions
-            .last()
-            .unwrap()
-            .timestamp
-            .as_ref()
-            .unwrap();
+        // let send_start_time = Instant::now();
+        // let response_size = resp_item.encoded_len();
+        // let num_of_transactions = resp_item.transactions.len();
+        // let start_version = resp_item.transactions.first().unwrap().version;
+        // let end_version = resp_item.transactions.last().unwrap().version;
+        // let start_version_txn_timestamp = resp_item
+        //     .transactions
+        //     .first()
+        //     .unwrap()
+        //     .timestamp
+        //     .as_ref()
+        //     .unwrap();
+        // let end_version_txn_timestamp = resp_item
+        //     .transactions
+        //     .last()
+        //     .unwrap()
+        //     .timestamp
+        //     .as_ref()
+        //     .unwrap();
 
         tx.send_timeout(
             Result::<TransactionsResponse, Status>::Ok(resp_item.clone()),
@@ -942,18 +942,18 @@ async fn channel_send_multiple_with_timeout(
         )
         .await?;
 
-        log_grpc_step(
-            SERVICE_TYPE,
-            IndexerGrpcStep::DataServiceChunkSent,
-            Some(start_version as i64),
-            Some(end_version as i64),
-            Some(start_version_txn_timestamp),
-            Some(end_version_txn_timestamp),
-            Some(send_start_time.elapsed().as_secs_f64()),
-            Some(response_size),
-            Some(num_of_transactions as i64),
-            Some(&request_metadata),
-        );
+        // log_grpc_step(
+        //     SERVICE_TYPE,
+        //     IndexerGrpcStep::DataServiceChunkSent,
+        //     Some(start_version as i64),
+        //     Some(end_version as i64),
+        //     Some(start_version_txn_timestamp),
+        //     Some(end_version_txn_timestamp),
+        //     Some(send_start_time.elapsed().as_secs_f64()),
+        //     Some(response_size),
+        //     Some(num_of_transactions as i64),
+        //     Some(&request_metadata),
+        // );
     }
 
     log_grpc_step(
