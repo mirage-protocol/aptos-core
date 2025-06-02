@@ -725,6 +725,6 @@ module aptos_framework::staking_config {
 
     #[test_only]
     public fun calculate_and_save_latest_epoch_rewards_rate_for_test(): FixedPoint64 acquires StakingRewardsConfig {
-        calculate_and_save_latest_epoch_rewards_rate();
+        calculate_and_save_latest_epoch_rewards_rate()
     }
 }
