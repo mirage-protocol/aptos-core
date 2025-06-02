@@ -151,6 +151,26 @@ module aptos_framework::staking_config {
         get_reward_rate(borrow_global<StakingConfig>(@aptos_framework))
     }
 
+    #[view]
+    public fun get_min_rewards_rate(): FixedPoint64 acquires StakingRewardsConfig {
+        borrow_global<StakingRewardsConfig>(@aptos_framework).min_rewards_rate
+    }
+
+    #[view]
+    public fun get_rewards_rate_period_in_secs(): u64 acquires StakingRewardsConfig {
+        borrow_global<StakingRewardsConfig>(@aptos_framework).rewards_rate_period_in_secs
+    }
+
+    #[view]
+    public fun get_last_rewards_rate_period_start_in_secs(): u64 acquires StakingRewardsConfig {
+        borrow_global<StakingRewardsConfig>(@aptos_framework).last_rewards_rate_period_start_in_secs
+    }
+
+    #[view]
+    public fun get_rewards_rate_decrease_rate(): FixedPoint64 acquires StakingRewardsConfig {
+        borrow_global<StakingRewardsConfig>(@aptos_framework).rewards_rate_decrease_rate
+    }
+
     /// Initialize rewards configurations.
     /// Can only be called as part of the Aptos governance proposal process established by the AptosGovernance module.
     public fun initialize_rewards(
@@ -701,5 +721,10 @@ module aptos_framework::staking_config {
             last_rewards_rate_period_start_in_secs,
             rewards_rate_decrease_rate,
         );
+    }
+
+    #[test_only]
+    public fun calculate_and_save_latest_epoch_rewards_rate_for_test(): FixedPoint64 acquires StakingRewardsConfig {
+        calculate_and_save_latest_epoch_rewards_rate();
     }
 }
